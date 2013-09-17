@@ -65,12 +65,8 @@ var window = {};
     });
 
     var omit = ['length', 'constructor', 'toString', 'toLocalString'];
-    var methods = Object.getOwnPropertyNames(arrProto)
-        .filter(function (fn) {
-            return omit.indexOf(fn) < 0;
-        });
-
-    methods.forEach(function (fn) {
+    Object.getOwnPropertyNames(arrProto).forEach(function (fn) {
+        if (omit.indexOf(fn) > -1) return;
         Object.defineProperty(Collection.prototype, fn, {
             value: function () {
                 var args = __slice.call(arguments);
