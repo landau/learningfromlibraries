@@ -37,13 +37,24 @@
         },
 
         get json() {
+            return JSON.stringify(this);
+        },
+
+        get repr() {
             var self = this;
-            return JSON.stringify(this, function (key, val) {
-                if (self === val || (typeof val === 'number' && !isNaN(parseInt(key, 10)))) {
+            // override toJSON for repr purposes
+            Object.defineProperty(this, 'toJSON', { value: null, writeable: true, configurable: true });
+
+            var repr = JSON.stringify(this, function (key, val) {
+                if (self === val || !isNaN(parseInt(key, 10))) {
                     return val;
                 }
                 return undefined;
             });
+
+            // reset
+            delete this.toJSON;
+            return repr;
         }
     };
 
@@ -98,6 +109,14 @@
                 }
                 return this;
             }
+        },
+
+        toJSON: {
+            value: function () {
+                return this.map(function (val) {
+                    return val;
+                });
+            }
         }
     });
 
@@ -117,11 +136,11 @@
     });
 
 
-    // Just incase another type of collection
-    // exists on the window already
     if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
         module.exports = Collection;
     } else {
+        // Just incase another type of collection
+        // exists on the window already
         var oldC = window.Collection;
         window.Collection = Collection;
     }

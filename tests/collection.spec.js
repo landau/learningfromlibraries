@@ -54,7 +54,7 @@ describe('Collection', function () {
         });
     });
 
-    describe('.length', function () {
+    describe('length', function () {
         it('should initalize at length 0', function () {
             var c = new Collection();
             c.length.should.equal(0);
@@ -92,8 +92,24 @@ describe('Collection', function () {
         });
     });
 
-    describe('.toJSON', function () {
+    describe('repr', function () {
+        it('should return a collection representation', function () {
+            var c = new Collection([1,2,3]);
+            c.repr.should.equal('{"0":1,"1":2,"2":3}');
+        });
+
+        it('should reset toJSON method', function () {
+            var c = new Collection([1,2,3]);
+            c.repr.should.equal('{"0":1,"1":2,"2":3}');
+            c.json.should.equal('[1,2,3]');
+        });
     });
 
-    
+    describe('json', function () {
+        it('should return an array representation', function () {
+            var c = new Collection([1,2,3]);
+            c.json.should.equal('[1,2,3]');
+        });
+    });
+
 });
