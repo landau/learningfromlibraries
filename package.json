@@ -1,0 +1,19 @@
+{
+  "name": "lfl",
+  "version": "0.0.0",
+  "description": "",
+  "main": "code.js",
+  "scripts": {
+    "test": "grunt"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-contrib-jshint": "~0.6.4",
+    "grunt-mocha-test": "~0.6.3",
+    "grunt": "~0.4.1",
+    "coffee-script": "~1.6.3",
+    "should": "~1.3.0"
+  }
+}
