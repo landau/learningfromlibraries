@@ -38,7 +38,9 @@ module.exports = (grunt) ->
                     define      : true
                     require     : true
                     describe    : true
+                    xdescribe   : true
                     it          : true
+                    xit         : true
                     beforeEach  : true
                     afterEach   : true
                     should      : true
