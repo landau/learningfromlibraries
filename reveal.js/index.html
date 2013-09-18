@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>reveal.js - The HTML Presentation Framework</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/default.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+		<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h2>Learning From Libraries</h2>
+					<p>
+						<small><a href="http://trevorlandau.net" target="_blank">Trevor Landau</a> | <a href="http://twitter.com/trevor_landau" target="_blank">@trevor_landau</a></small>
+					</p>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+                        ## About
+
+                        <aside class="notes">
+                            <ul>
+                                <li>Daily work and talking to others is a great way to learn but..
+                                <li>Looking inside libraries can help you learn how to write better code and understand how the internals work
+                                <li>I'm going to show you a library I build from reading the source of other libraries
+                                <li>We'll step through each line and where the idea came from
+                                <li>Not all the examples fit the library i've created, but the idea is still valid
+                            </ul>
+                        </aside>
+                    </script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+                        ## What Libs?
+                        <aside class="notes">
+                            <ul>
+                                <li>We'll examine some "tricks" from jQuery, Backbone, Underscore, Angular, Should, Mocha
+                                <li>Looking inside libraries can help you learn how to write better code and understand how the internals work
+                            </ul>
+                        </aside>
+                    </script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+                        ## What did I make?
+                        ```
+                        function Collection() {}
+                        ```
+                        <aside class="notes">
+                            <ul>
+                                <li>The library I created is an Array-like structure i'm calling `Collection`
+                                <li>It's array like because well...lets dive in
+                            </ul>
+                        </aside>
+                    </script>
+				</section>
+
+				<section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ## jQuery
+                            <aside class="notes">
+                                <ul>
+                                    <li>jQuery teaches many things, many which have to do with the DOM
+                                    <li>My api doesn't deal with the DOM, but it does have some cool jQuery tricks
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### noConflict
+                            ```
+                            window.Collection = 'foo';
+                            var oldC = window.Collection;
+                            Collection.noConflict = function () {
+                                window.Collection = oldC;
+                                return Collection;
+                            };
+
+                            var C = Collection.noConflict();
+                            log(typeof C, typeof Collection); // object, string
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>I don't know if jQUery did this first, but as an older popular library that had different versions on other sites, I'll asume it was!
+                                    <li>Careful! Don't blast away an existing variable!
+                                    <li>you should really use CommonJS styele modules
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### Length
+                            ```
+                            Collection.prototype = {
+                                length: 0
+                            };
+                            var c = new Collection;
+                            Array.prototype.push.call(c, 1, 2);
+                            log(c.length); // 2
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>We can shove length on prototype to make an instance of our object act automatically update using array methods
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### Constructor facade
+                            ```
+                            function Collection(args) {
+                                if (args && !Array.isArray(args) && arguments.length >= 0) {
+                                    if (typeof args.toArray === 'function') {
+                                        args = args.toArray();
+                                    } else {
+                                        args = __slice.apply(arguments);
+                                    }
+                                } else { args = []; }
+                                if (args.length) Array.prototype.push.apply(this, args);
+                            }
+
+                            var c = new Collection([1,2,3]);
+                            var c2 = new Collection(1,2,3);
+                            var c3 = new Collection({ toArray: function () { return [1,2,3]; } });
+                            log(c.length, c2.length, c3.length); // 3, 3, 3
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>Now we can supply a many types of args and get the same result
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+				</section>
+				<section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ## Backbone
+                            <aside class="notes">
+                                <ul>
+                                    <li>Backbone has a few neat tricks in it, but a lot of them are domain specific
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### ALL ARRAY BELONG TO US
+                            ```
+                            function Collection(args) {
+                                this.push.apply(this, args);
+                            }
+                            var omit = ['length', 'constructor', 'toString', 'toLocalString'];
+                            Object.getOwnPropertyNames(arrProto).forEach(function (fn) {
+                                if (omit.indexOf(fn) > -1) return;
+                                Collection.prototype[fn] = function () {
+                                    var args = __slice.call(arguments);
+                                    return arrProto[fn].apply(this, args);
+                                };
+                            });
+                            var c = new Collection([1,2,3]);
+                            log(c.length); // 3
+                            log(c.unshift(0)); // [0, 1, 2, 3]
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>while we are at it, lets add all array methods
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### on && trigger
+                            ```
+                            c.on('push', function () {
+                                log('push event', arguments); // 4, 5, 6
+                            });
+                            c.push(4, 5, 6);
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>Many times you need to know if an object has any properties change 
+                                    <li>Without an event api (or Object.observe) its impossible without setTimeout
+                                    <li>Let's see how this works
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### on
+                            ```
+                            on: function (name, fn, ctx) {
+                                this._events = this._events || {};
+                                var events = this._events[name] || (this._events[name] = []);
+                                events.push({ fn: fn, ctx: ctx || this });
+                                return this;
+                            }
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>We'll use a hash to store the name of methods
+                                    <li>and add our listener to the array
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### trigger
+                            ```
+                            trigger: function (name) {
+                                if (!this._events) return this;
+                                var args = __slice.call(arguments, 1);
+                                var events = this._events[name];
+                                if (events) {
+                                    events.forEach(function (ev) {
+                                        ev.fn.apply(ev.ctx, args);
+                                    });
+                                }
+                                return this;
+                            }
+                                                
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>Iterate over all the events for our requested named event
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### Lets see in our api
+                            ```
+                            Object.getOwnPropertyNames(arrProto).forEach(function (fn) {
+                                if (omit.indexOf(fn) > -1) return;
+                                Collection.prototype[fn] = function () {
+                                    var args = __slice.call(arguments);
+                                    var ret = arrProto[fn].apply(this, args);
+                                    this.trigger(fn, ret);
+                                    return ret;
+                                };
+                            });
+
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>One line gives events to all our array like events!
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### toJSON
+                            ```
+                            Collection.prototype.toJSON = function () {
+                                return this.map(function (val) {
+                                    return val;
+                                });
+                            };
+                            var c = new Collection(1,2,3);
+                            // Without method
+                            JSON.stringify(c); // '{"0":1,"1":2,"2":3}' - will also contain other props...
+                            // With method
+                            JSON.stringify(c); // '[1,2,3]' 
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>Sometimes the format does not fit for JSON.stringify outputs
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+				</section>
+                <section data-markdown>
+                    <script type="text/template">
+                        ### Underscore
+                        ```
+                        Collection.zip = function () {
+                            var args = __slice.call(arguments);
+                            var lengths = args.map(function (c) { return c.length; });
+                            var length = Math.max.apply(Math, lengths);
+                            var results = new Array(length);
+                            var map = function (c) { return c[i]; };
+                            for (var i = 0; i < length; i += 1) {
+                                results[i] = args.map(map);
+                            }
+                            return results;
+                        }
+                        var c = new Collection([1,2]);
+                        var c2 = new Collection([3,4]);
+                        console.log(Collection.zip(c, c2)); // [[1,3],[2,4]];
+                        ```
+                        <aside class="notes">
+                            <ul>
+                                <li>Lets get all the args in a slice
+                                <li>Here is the cool part, map all our lengths and get the longest
+                                    so we init an array at the max length we'll need
+                                <li>once we have our array length we can zip them together
+                            </ul>
+                        </aside>
+                    </script>
+                </section>
+				<section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### Angular
+                            http://jsperf.com/apply-vs-call-vs-invoke
+                            ```
+                            // performant apply
+                            var pApply = function (args, fn, ctx) {
+                                switch (args.length) {
+                                    case 0: return ctx[fn]();
+                                    case 1: return ctx[fn](args[0]);
+                                    case 2: return ctx[fn](args[0], args[1]);
+                                    case 3: return ctx[fn](args[0], args[1], args[2]);
+                                    case 4: return ctx[fn](args[0], args[1], args[2], args[3]);
+                                    case 5: return ctx[fn](args[0], args[1], args[2], args[3], args[4]);
+                                    ...
+                                    case 10: return ctx[fn](args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+                                    default: return ctx[fn].apply(ctx, args);
+                                }
+                            };
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>According to this jsperf by Igor Minor one of the ng devs, apply is significantly slower
+                                        for a certain number of args
+                                    <li>Since millions of users will be using this api, we want it to be as performant as possible!
+                                    <li> 9,907,444 compared to 5,957,533 for apply
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### Let's see it in the api
+                            ```
+                            function Collection(args) {
+                                // Accept different types
+                                args = this._toArray(args) || [];
+                                pApply(args, 'push', this);
+                            }
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>Since initialization is a key component of collections, the constructor looks like a great place
+                                        for this optimization!
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+				</section>
+				<section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### Mocha
+                            ```
+                            Collection.prototype.repr = function () {
+                                var self = this;
+                                // override toJSON for repr purposes
+                                this.toJSON = null;
+
+                                var repr = JSON.stringify(this, function (key, val) {
+                                    if (self === val || !isNaN(parseInt(key, 10))) {
+                                        return val;
+                                    }
+                                    return void 0;
+                                });
+
+                                // reset
+                                delete this.toJSON;
+                                return repr;
+                            }
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>Mocha is a testing framework...we can pick at least one thing from it!
+                                    <li>Stringify actually takes 3 args! We can create representation of the object
+                                        with just the array like values
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+				</section>
+				<section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### Should.js
+                            <aside class="notes">
+                                <ul>
+                                    <li>If you haven't seen ecmascript 5 descriptors /getters/setters before
+                                        should is a great resource to see them in action.
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### get
+                            ```
+                            Collection.prototype = {
+                                get size() {
+                                    return this.length;
+                                },
+                                get json() {
+                                    return JSON.stringify(this);
+                                }
+                            };
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>We can do extra calculation or howabout an alias
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                            ### defineProperty
+                            ```
+                            var omit = ['length', 'constructor', 'toString', 'toLocalString'];
+                            Object.getOwnPropertyNames(arrProto).forEach(function (fn) {
+                                if (omit.indexOf(fn) > -1) return;
+                                Object.defineProperty(Collection.prototype, fn, {
+                                    value: function () {
+                                        var args = __slice.call(arguments);
+                                        var ret = arrProto[fn].apply(this, args);
+                                        var evArgs = [fn, ret];
+                                        pApply(evArgs, 'trigger', this);
+                                        return ret;
+                                    }
+                                });
+                            });
+                            ```
+                            <aside class="notes">
+                                <ul>
+                                    <li>we can protect methods and prevent problems with enumerability!
+                                </ul>
+                            </aside>
+                        </script>
+                    </section>
+				</section>
+				<section>
+					<h1>THE END</h1>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>

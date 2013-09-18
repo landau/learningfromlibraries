@@ -26,7 +26,7 @@
 
     function Collection(args) {
         // Accept different types
-        args = this._convertToArray(args) || [];
+        args = this._toArray(args) || [];
         pApply(args, 'push', this);
     }
 
@@ -49,7 +49,7 @@
                 if (self === val || !isNaN(parseInt(key, 10))) {
                     return val;
                 }
-                return undefined;
+                return void 0;
             });
 
             // reset
@@ -66,7 +66,7 @@
             enumerable: true
         },
 
-        _convertToArray: {
+        _toArray: {
             value: function (args) {
                 if (args && !Array.isArray(args) && arguments.length >= 0) {
                     // Convert to array
@@ -169,36 +169,3 @@
         }
     });
 })();
-
-/*
-(function (root) {
-    'use strict';
-    var log = console.log;
-    var Collection = root.Collection.noConflict();
-
-    var c = new Collection([1,2,3]);
-    log(c, c.length === 3);
-
-    c.on('push', function () {
-        log('push event', arguments);
-    });
-    c.push(4, 5, 6);
-    c.push(7,8);
-    c.unshift(10);
-    log(c, c.length === 6);
-
-    try {
-        Collection.zip = 'foo';
-    } catch (e) {
-        log(e.message);
-    }
-
-    log(c.size === c.length); // true
-    log(Collection.prototype); // { size: [Getter], length: 0 }
-    log(Collection.prototype.trigger); // [Function]
-    log('json', c.json);
-    
-
-})(window || GLOBAL);
-*/
-

@@ -30,19 +30,19 @@ describe('Collection', function () {
         });
     });
 
-    describe('._convertToArray', function () {
+    describe('._toArray', function () {
         it('should convert an object with toArray', function () {
             var obj = {
                 toArray: function () {
                     return [1,2,3];
                 }
             };
-            var arr = this.c._convertToArray(obj);
+            var arr = this.c._toArray(obj);
             arr.should.be.instanceOf(Array);
         });
 
         it('should convert comma separated to an array', function () {
-            var arr = this.c._convertToArray(1,2,3,4);
+            var arr = this.c._toArray(1,2,3,4);
             arr.should.be.instanceOf(Array);
         });
     });
